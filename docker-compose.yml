@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  airflow:
+    image: apache/airflow:2.9.2
+    container_name: airflow-etl
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=False
+      - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
+      - AIRFLOW__WEBSERVER__WORKERS=1
+      - AIRFLOW__WEBSERVER__WORKER_CLASS=sync
+      - AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT=300
+    volumes:
+      - .\dags:/opt/airflow/dags
+      - .\data:/opt/airflow/data
+      - .\airflow_home:/opt/airflow
+      - .\requirements.txt:/opt/airflow/requirements.txt
+    command:
+      - bash
+      - -lc
+      - if [ -s /opt/airflow/requirements.txt ]; then pip install --no-cache-dir --constraint https://raw.githubusercontent.com/apache/airflow/constraints-2.9.2/constraints-3.12.txt -r /opt/airflow/requirements.txt; fi && airflow standalone
